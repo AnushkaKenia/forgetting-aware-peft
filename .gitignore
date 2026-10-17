@@ -1,0 +1,12 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.env
+outputs.zip
+
+# Trained model/adapters
+outputs/adapters/
+
+# Ignore macOS metadata everywhere
+**/.DS_Store
