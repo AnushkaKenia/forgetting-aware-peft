@@ -1,0 +1,707 @@
+{
+  "phase": "phase4_multiseed_robustness",
+  "base_model": "Qwen/Qwen2.5-0.5B",
+  "target": "SAMSum",
+  "new_seeds_completed": [
+    123,
+    2026
+  ],
+  "methods": [
+    "lora",
+    "adalora",
+    "dora"
+  ],
+  "training": {
+    "train_n": 2000,
+    "epochs": 2,
+    "batch": 2,
+    "grad_accum": 8,
+    "effective_batch": 16,
+    "lr": 0.0002,
+    "max_len": 512
+  },
+  "per_seed_results": [
+    {
+      "seed": 123,
+      "method": "lora",
+      "boolq_pre": 0.62,
+      "boolq_post": 0.654,
+      "boolq_forgetting": -0.03400000000000003,
+      "piqa_pre": 0.674,
+      "piqa_post": 0.694,
+      "piqa_forgetting": -0.019999999999999907,
+      "arc_pre": 0.718,
+      "arc_post": 0.712,
+      "arc_forgetting": 0.006000000000000005,
+      "mmlu_pre": 0.454,
+      "mmlu_post": 0.456,
+      "mmlu_forgetting": -0.0020000000000000018,
+      "wikitext_pre_ppl": 17.202699686270577,
+      "wikitext_post_ppl": 18.140561079738518,
+      "wikitext_ppl_increase": 0.9378613934679407,
+      "samsum_r1_pre": 0.3776991425543211,
+      "samsum_r1_post": 0.4857005700372178,
+      "samsum_r2_pre": 0.1494152010831455,
+      "samsum_r2_post": 0.23567423779843644,
+      "samsum_rl_pre": 0.3113763574465613,
+      "samsum_rl_post": 0.4089529191919223,
+      "samsum_r1_gain": 0.1080014274828967,
+      "samsum_r2_gain": 0.08625903671529095,
+      "samsum_rl_gain": 0.097576561745361
+    },
+    {
+      "seed": 123,
+      "method": "adalora",
+      "boolq_pre": 0.62,
+      "boolq_post": 0.624,
+      "boolq_forgetting": -0.0040000000000000036,
+      "piqa_pre": 0.674,
+      "piqa_post": 0.678,
+      "piqa_forgetting": -0.0040000000000000036,
+      "arc_pre": 0.718,
+      "arc_post": 0.716,
+      "arc_forgetting": 0.0020000000000000018,
+      "mmlu_pre": 0.454,
+      "mmlu_post": 0.454,
+      "mmlu_forgetting": 0.0,
+      "wikitext_pre_ppl": 17.202699686270577,
+      "wikitext_post_ppl": 17.20063143262879,
+      "wikitext_ppl_increase": -0.002068253641787976,
+      "samsum_r1_pre": 0.3776991425543211,
+      "samsum_r1_post": 0.4339162844871427,
+      "samsum_r2_pre": 0.1494152010831455,
+      "samsum_r2_post": 0.19074315639084682,
+      "samsum_rl_pre": 0.3113763574465613,
+      "samsum_rl_post": 0.36055284831595297,
+      "samsum_r1_gain": 0.056217141932821624,
+      "samsum_r2_gain": 0.041327955307701336,
+      "samsum_rl_gain": 0.04917649086939169
+    },
+    {
+      "seed": 123,
+      "method": "dora",
+      "boolq_pre": 0.62,
+      "boolq_post": 0.65,
+      "boolq_forgetting": -0.030000000000000027,
+      "piqa_pre": 0.674,
+      "piqa_post": 0.694,
+      "piqa_forgetting": -0.019999999999999907,
+      "arc_pre": 0.718,
+      "arc_post": 0.712,
+      "arc_forgetting": 0.006000000000000005,
+      "mmlu_pre": 0.454,
+      "mmlu_post": 0.456,
+      "mmlu_forgetting": -0.0020000000000000018,
+      "wikitext_pre_ppl": 17.202699686270577,
+      "wikitext_post_ppl": 18.220895416159866,
+      "wikitext_ppl_increase": 1.018195729889289,
+      "samsum_r1_pre": 0.3776991425543211,
+      "samsum_r1_post": 0.48474407344452486,
+      "samsum_r2_pre": 0.1494152010831455,
+      "samsum_r2_post": 0.23548056558682726,
+      "samsum_rl_pre": 0.3113763574465613,
+      "samsum_rl_post": 0.40868495746650824,
+      "samsum_r1_gain": 0.10704493089020378,
+      "samsum_r2_gain": 0.08606536450368177,
+      "samsum_rl_gain": 0.09730860001994696
+    },
+    {
+      "seed": 2026,
+      "method": "lora",
+      "boolq_pre": 0.62,
+      "boolq_post": 0.642,
+      "boolq_forgetting": -0.02200000000000002,
+      "piqa_pre": 0.674,
+      "piqa_post": 0.688,
+      "piqa_forgetting": -0.013999999999999901,
+      "arc_pre": 0.718,
+      "arc_post": 0.694,
+      "arc_forgetting": 0.02400000000000002,
+      "mmlu_pre": 0.454,
+      "mmlu_post": 0.448,
+      "mmlu_forgetting": 0.006000000000000005,
+      "wikitext_pre_ppl": 17.202699686270577,
+      "wikitext_post_ppl": 18.076693597316147,
+      "wikitext_ppl_increase": 0.8739939110455701,
+      "samsum_r1_pre": 0.3776991425543211,
+      "samsum_r1_post": 0.49149449275001844,
+      "samsum_r2_pre": 0.1494152010831455,
+      "samsum_r2_post": 0.2409328853619141,
+      "samsum_rl_pre": 0.3113763574465613,
+      "samsum_rl_post": 0.41125667915630587,
+      "samsum_r1_gain": 0.11379535019569736,
+      "samsum_r2_gain": 0.09151768427876861,
+      "samsum_rl_gain": 0.09988032170974459
+    },
+    {
+      "seed": 2026,
+      "method": "adalora",
+      "boolq_pre": 0.62,
+      "boolq_post": 0.63,
+      "boolq_forgetting": -0.010000000000000009,
+      "piqa_pre": 0.674,
+      "piqa_post": 0.67,
+      "piqa_forgetting": 0.0040000000000000036,
+      "arc_pre": 0.718,
+      "arc_post": 0.724,
+      "arc_forgetting": -0.006000000000000005,
+      "mmlu_pre": 0.454,
+      "mmlu_post": 0.448,
+      "mmlu_forgetting": 0.006000000000000005,
+      "wikitext_pre_ppl": 17.202699686270577,
+      "wikitext_post_ppl": 17.19770183229168,
+      "wikitext_ppl_increase": -0.004997853978895961,
+      "samsum_r1_pre": 0.3776991425543211,
+      "samsum_r1_post": 0.4318013692253764,
+      "samsum_r2_pre": 0.1494152010831455,
+      "samsum_r2_post": 0.1871615252628411,
+      "samsum_rl_pre": 0.3113763574465613,
+      "samsum_rl_post": 0.3572755193174534,
+      "samsum_r1_gain": 0.0541022266710553,
+      "samsum_r2_gain": 0.03774632417969562,
+      "samsum_rl_gain": 0.0458991618708921
+    },
+    {
+      "seed": 2026,
+      "method": "dora",
+      "boolq_pre": 0.62,
+      "boolq_post": 0.638,
+      "boolq_forgetting": -0.018000000000000016,
+      "piqa_pre": 0.674,
+      "piqa_post": 0.682,
+      "piqa_forgetting": -0.008000000000000007,
+      "arc_pre": 0.718,
+      "arc_post": 0.692,
+      "arc_forgetting": 0.026000000000000023,
+      "mmlu_pre": 0.454,
+      "mmlu_post": 0.442,
+      "mmlu_forgetting": 0.01200000000000001,
+      "wikitext_pre_ppl": 17.202699686270577,
+      "wikitext_post_ppl": 18.1383800684902,
+      "wikitext_ppl_increase": 0.9356803822196227,
+      "samsum_r1_pre": 0.3776991425543211,
+      "samsum_r1_post": 0.494234904892924,
+      "samsum_r2_pre": 0.1494152010831455,
+      "samsum_r2_post": 0.24340898840625397,
+      "samsum_rl_pre": 0.3113763574465613,
+      "samsum_rl_post": 0.41398288942878336,
+      "samsum_r1_gain": 0.11653576233860291,
+      "samsum_r2_gain": 0.09399378732310848,
+      "samsum_rl_gain": 0.10260653198222208
+    }
+  ],
+  "summary_seed123_2026": [
+    {
+      "method": "lora",
+      "metric": "boolq_pre",
+      "n": 2,
+      "mean": 0.62,
+      "std": 0.0
+    },
+    {
+      "method": "lora",
+      "metric": "boolq_post",
+      "n": 2,
+      "mean": 0.648,
+      "std": 0.008485281374238578
+    },
+    {
+      "method": "lora",
+      "metric": "boolq_forgetting",
+      "n": 2,
+      "mean": -0.028000000000000025,
+      "std": 0.008485281374238578
+    },
+    {
+      "method": "lora",
+      "metric": "piqa_pre",
+      "n": 2,
+      "mean": 0.674,
+      "std": 0.0
+    },
+    {
+      "method": "lora",
+      "metric": "piqa_post",
+      "n": 2,
+      "mean": 0.691,
+      "std": 0.004242640687119289
+    },
+    {
+      "method": "lora",
+      "metric": "piqa_forgetting",
+      "n": 2,
+      "mean": -0.016999999999999904,
+      "std": 0.004242640687119289
+    },
+    {
+      "method": "lora",
+      "metric": "arc_pre",
+      "n": 2,
+      "mean": 0.718,
+      "std": 0.0
+    },
+    {
+      "method": "lora",
+      "metric": "arc_post",
+      "n": 2,
+      "mean": 0.703,
+      "std": 0.012727922061357866
+    },
+    {
+      "method": "lora",
+      "metric": "arc_forgetting",
+      "n": 2,
+      "mean": 0.015000000000000013,
+      "std": 0.012727922061357866
+    },
+    {
+      "method": "lora",
+      "metric": "mmlu_pre",
+      "n": 2,
+      "mean": 0.454,
+      "std": 0.0
+    },
+    {
+      "method": "lora",
+      "metric": "mmlu_post",
+      "n": 2,
+      "mean": 0.452,
+      "std": 0.005656854249492385
+    },
+    {
+      "method": "lora",
+      "metric": "mmlu_forgetting",
+      "n": 2,
+      "mean": 0.0020000000000000018,
+      "std": 0.005656854249492385
+    },
+    {
+      "method": "lora",
+      "metric": "wikitext_pre_ppl",
+      "n": 2,
+      "mean": 17.202699686270577,
+      "std": 0.0
+    },
+    {
+      "method": "lora",
+      "metric": "wikitext_post_ppl",
+      "n": 2,
+      "mean": 18.108627338527334,
+      "std": 0.04516112991817089
+    },
+    {
+      "method": "lora",
+      "metric": "wikitext_ppl_increase",
+      "n": 2,
+      "mean": 0.9059276522567554,
+      "std": 0.04516112991817089
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_r1_pre",
+      "n": 2,
+      "mean": 0.3776991425543211,
+      "std": 0.0
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_r1_post",
+      "n": 2,
+      "mean": 0.4885975313936181,
+      "std": 0.004096922039892103
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_r2_pre",
+      "n": 2,
+      "mean": 0.1494152010831455,
+      "std": 0.0
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_r2_post",
+      "n": 2,
+      "mean": 0.23830356158017527,
+      "std": 0.003718425352005168
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_rl_pre",
+      "n": 2,
+      "mean": 0.3113763574465613,
+      "std": 0.0
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_rl_post",
+      "n": 2,
+      "mean": 0.4101047991741141,
+      "std": 0.0016290042930417153
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_r1_gain",
+      "n": 2,
+      "mean": 0.11089838883929704,
+      "std": 0.004096922039892103
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_r2_gain",
+      "n": 2,
+      "mean": 0.08888836049702978,
+      "std": 0.003718425352005168
+    },
+    {
+      "method": "lora",
+      "metric": "samsum_rl_gain",
+      "n": 2,
+      "mean": 0.0987284417275528,
+      "std": 0.0016290042930417153
+    },
+    {
+      "method": "adalora",
+      "metric": "boolq_pre",
+      "n": 2,
+      "mean": 0.62,
+      "std": 0.0
+    },
+    {
+      "method": "adalora",
+      "metric": "boolq_post",
+      "n": 2,
+      "mean": 0.627,
+      "std": 0.004242640687119289
+    },
+    {
+      "method": "adalora",
+      "metric": "boolq_forgetting",
+      "n": 2,
+      "mean": -0.007000000000000006,
+      "std": 0.004242640687119289
+    },
+    {
+      "method": "adalora",
+      "metric": "piqa_pre",
+      "n": 2,
+      "mean": 0.674,
+      "std": 0.0
+    },
+    {
+      "method": "adalora",
+      "metric": "piqa_post",
+      "n": 2,
+      "mean": 0.674,
+      "std": 0.005656854249492385
+    },
+    {
+      "method": "adalora",
+      "metric": "piqa_forgetting",
+      "n": 2,
+      "mean": 0.0,
+      "std": 0.005656854249492385
+    },
+    {
+      "method": "adalora",
+      "metric": "arc_pre",
+      "n": 2,
+      "mean": 0.718,
+      "std": 0.0
+    },
+    {
+      "method": "adalora",
+      "metric": "arc_post",
+      "n": 2,
+      "mean": 0.72,
+      "std": 0.005656854249492385
+    },
+    {
+      "method": "adalora",
+      "metric": "arc_forgetting",
+      "n": 2,
+      "mean": -0.0020000000000000018,
+      "std": 0.005656854249492385
+    },
+    {
+      "method": "adalora",
+      "metric": "mmlu_pre",
+      "n": 2,
+      "mean": 0.454,
+      "std": 0.0
+    },
+    {
+      "method": "adalora",
+      "metric": "mmlu_post",
+      "n": 2,
+      "mean": 0.451,
+      "std": 0.004242640687119289
+    },
+    {
+      "method": "adalora",
+      "metric": "mmlu_forgetting",
+      "n": 2,
+      "mean": 0.0030000000000000027,
+      "std": 0.004242640687119289
+    },
+    {
+      "method": "adalora",
+      "metric": "wikitext_pre_ppl",
+      "n": 2,
+      "mean": 17.202699686270577,
+      "std": 0.0
+    },
+    {
+      "method": "adalora",
+      "metric": "wikitext_post_ppl",
+      "n": 2,
+      "mean": 17.199166632460233,
+      "std": 0.002071540264535452
+    },
+    {
+      "method": "adalora",
+      "metric": "wikitext_ppl_increase",
+      "n": 2,
+      "mean": -0.0035330538103419684,
+      "std": 0.002071540264535452
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_r1_pre",
+      "n": 2,
+      "mean": 0.3776991425543211,
+      "std": 0.0
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_r1_post",
+      "n": 2,
+      "mean": 0.43285882685625954,
+      "std": 0.0014954709232298912
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_r2_pre",
+      "n": 2,
+      "mean": 0.1494152010831455,
+      "std": 0.0
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_r2_post",
+      "n": 2,
+      "mean": 0.18895234082684398,
+      "std": 0.002532595658321667
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_rl_pre",
+      "n": 2,
+      "mean": 0.3113763574465613,
+      "std": 0.0
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_rl_post",
+      "n": 2,
+      "mean": 0.35891418381670315,
+      "std": 0.0023174215590183725
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_r1_gain",
+      "n": 2,
+      "mean": 0.05515968430193846,
+      "std": 0.0014954709232298912
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_r2_gain",
+      "n": 2,
+      "mean": 0.03953713974369848,
+      "std": 0.0025325956583216675
+    },
+    {
+      "method": "adalora",
+      "metric": "samsum_rl_gain",
+      "n": 2,
+      "mean": 0.047537826370141895,
+      "std": 0.0023174215590183725
+    },
+    {
+      "method": "dora",
+      "metric": "boolq_pre",
+      "n": 2,
+      "mean": 0.62,
+      "std": 0.0
+    },
+    {
+      "method": "dora",
+      "metric": "boolq_post",
+      "n": 2,
+      "mean": 0.644,
+      "std": 0.008485281374238578
+    },
+    {
+      "method": "dora",
+      "metric": "boolq_forgetting",
+      "n": 2,
+      "mean": -0.02400000000000002,
+      "std": 0.008485281374238578
+    },
+    {
+      "method": "dora",
+      "metric": "piqa_pre",
+      "n": 2,
+      "mean": 0.674,
+      "std": 0.0
+    },
+    {
+      "method": "dora",
+      "metric": "piqa_post",
+      "n": 2,
+      "mean": 0.688,
+      "std": 0.008485281374238499
+    },
+    {
+      "method": "dora",
+      "metric": "piqa_forgetting",
+      "n": 2,
+      "mean": -0.013999999999999957,
+      "std": 0.008485281374238499
+    },
+    {
+      "method": "dora",
+      "metric": "arc_pre",
+      "n": 2,
+      "mean": 0.718,
+      "std": 0.0
+    },
+    {
+      "method": "dora",
+      "metric": "arc_post",
+      "n": 2,
+      "mean": 0.702,
+      "std": 0.014142135623730963
+    },
+    {
+      "method": "dora",
+      "metric": "arc_forgetting",
+      "n": 2,
+      "mean": 0.016000000000000014,
+      "std": 0.014142135623730963
+    },
+    {
+      "method": "dora",
+      "metric": "mmlu_pre",
+      "n": 2,
+      "mean": 0.454,
+      "std": 0.0
+    },
+    {
+      "method": "dora",
+      "metric": "mmlu_post",
+      "n": 2,
+      "mean": 0.449,
+      "std": 0.009899494936611674
+    },
+    {
+      "method": "dora",
+      "metric": "mmlu_forgetting",
+      "n": 2,
+      "mean": 0.0050000000000000044,
+      "std": 0.009899494936611674
+    },
+    {
+      "method": "dora",
+      "metric": "wikitext_pre_ppl",
+      "n": 2,
+      "mean": 17.202699686270577,
+      "std": 0.0
+    },
+    {
+      "method": "dora",
+      "metric": "wikitext_post_ppl",
+      "n": 2,
+      "mean": 18.179637742325035,
+      "std": 0.05834716188918661
+    },
+    {
+      "method": "dora",
+      "metric": "wikitext_ppl_increase",
+      "n": 2,
+      "mean": 0.9769380560544558,
+      "std": 0.05834716188918661
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_r1_pre",
+      "n": 2,
+      "mean": 0.3776991425543211,
+      "std": 0.0
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_r1_post",
+      "n": 2,
+      "mean": 0.4894894891687244,
+      "std": 0.006711031276261567
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_r2_pre",
+      "n": 2,
+      "mean": 0.1494152010831455,
+      "std": 0.0
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_r2_post",
+      "n": 2,
+      "mean": 0.2394447769965406,
+      "std": 0.005606241539730794
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_rl_pre",
+      "n": 2,
+      "mean": 0.3113763574465613,
+      "std": 0.0
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_rl_post",
+      "n": 2,
+      "mean": 0.4113339234476458,
+      "std": 0.003746203616789694
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_r1_gain",
+      "n": 2,
+      "mean": 0.11179034661440335,
+      "std": 0.006711031276261567
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_r2_gain",
+      "n": 2,
+      "mean": 0.09002957591339512,
+      "std": 0.005606241539730794
+    },
+    {
+      "method": "dora",
+      "metric": "samsum_rl_gain",
+      "n": 2,
+      "mean": 0.09995756600108452,
+      "std": 0.003746203616789694
+    }
+  ],
+  "notes": [
+    "Seeds 123 and 2026 were trained in Phase 4.",
+    "Seed 42 is the historical run from Phases 1-3 and is not retrained here.",
+    "Positive BoolQ/PIQA/ARC/MMLU forgetting gaps indicate degradation.",
+    "Positive WikiText perplexity increase indicates degradation.",
+    "Positive SAMSum ROUGE gain indicates target-task improvement.",
+    "Three-seed aggregation should combine these results with the historical seed-42 results."
+  ]
+}

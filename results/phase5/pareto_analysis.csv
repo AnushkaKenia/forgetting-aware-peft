@@ -1,0 +1,4 @@
+method,adaptation_score,retention_score,pareto_efficient
+adalora,0.0,0.4,False
+dora,1.0,0.45457142857142885,True
+lora,0.9016797484249208,0.6306378260188004,True

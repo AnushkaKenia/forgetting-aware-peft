@@ -1,0 +1,123 @@
+{
+  "phase": "phase5_forgetting_aware_tradeoff_analysis",
+  "seeds": [
+    42,
+    123,
+    2026
+  ],
+  "methods": [
+    "lora",
+    "adalora",
+    "dora"
+  ],
+  "normalization": "Per-probe min-max across method-level 3-seed means; 0 best loss, 1 worst loss.",
+  "retention_score": "1 - mean normalized loss across 5 probes",
+  "adaptation_score": "min-max normalized mean SAMSum ROUGE-L gain",
+  "composite": "(1-w)*adaptation_score + w*retention_score; w swept 0..1",
+  "components": [
+    {
+      "method": "adalora",
+      "samsum_rl_gain": 0.05420957620125957,
+      "boolq_forgetting": -0.0026666666666666666,
+      "piqa_forgetting": 0.0,
+      "arc_forgetting": 0.0,
+      "mmlu_forgetting": 0.0006666666666666666,
+      "wikitext_ppl_increase": -0.003906442878668233,
+      "boolq_forgetting_norm_loss": 1.0,
+      "piqa_forgetting_norm_loss": 1.0,
+      "arc_forgetting_norm_loss": 0.0,
+      "mmlu_forgetting_norm_loss": 1.0,
+      "wikitext_ppl_increase_norm_loss": 0.0,
+      "retention_loss": 0.6,
+      "retention_score": 0.4,
+      "adaptation_score": 0.0
+    },
+    {
+      "method": "dora",
+      "samsum_rl_gain": 0.10359835872995742,
+      "boolq_forgetting": -0.01933333333333333,
+      "piqa_forgetting": -0.0146666666666666,
+      "arc_forgetting": 0.011333333333333334,
+      "mmlu_forgetting": 0.0,
+      "wikitext_ppl_increase": 0.9717333152554559,
+      "boolq_forgetting_norm_loss": 0.10714285714285725,
+      "piqa_forgetting_norm_loss": 0.11999999999999865,
+      "arc_forgetting_norm_loss": 1.0,
+      "mmlu_forgetting_norm_loss": 0.5,
+      "wikitext_ppl_increase_norm_loss": 1.0,
+      "retention_loss": 0.5454285714285712,
+      "retention_score": 0.45457142857142885,
+      "adaptation_score": 1.0
+    },
+    {
+      "method": "lora",
+      "samsum_rl_gain": 0.09874244120674897,
+      "boolq_forgetting": -0.021333333333333333,
+      "piqa_forgetting": -0.016666666666666566,
+      "arc_forgetting": 0.010666666666666666,
+      "mmlu_forgetting": -0.0006666666666666666,
+      "wikitext_ppl_increase": 0.8796664834296569,
+      "boolq_forgetting_norm_loss": 0.0,
+      "piqa_forgetting_norm_loss": 0.0,
+      "arc_forgetting_norm_loss": 0.9411764705882352,
+      "mmlu_forgetting_norm_loss": 0.0,
+      "wikitext_ppl_increase_norm_loss": 0.905634399317763,
+      "retention_loss": 0.36936217398119964,
+      "retention_score": 0.6306378260188004,
+      "adaptation_score": 0.9016797484249208
+    }
+  ],
+  "pareto": [
+    {
+      "method": "adalora",
+      "adaptation_score": 0.0,
+      "retention_score": 0.4,
+      "pareto_efficient": false
+    },
+    {
+      "method": "dora",
+      "adaptation_score": 1.0,
+      "retention_score": 0.45457142857142885,
+      "pareto_efficient": true
+    },
+    {
+      "method": "lora",
+      "adaptation_score": 0.9016797484249208,
+      "retention_score": 0.6306378260188004,
+      "pareto_efficient": true
+    }
+  ],
+  "equal_weight": [
+    {
+      "method": "lora",
+      "score": 0.7661587872218606
+    },
+    {
+      "method": "dora",
+      "score": 0.7272857142857144
+    },
+    {
+      "method": "adalora",
+      "score": 0.2
+    }
+  ],
+  "winner_ranges": [
+    {
+      "method": "dora",
+      "min": 0.0,
+      "max": 0.35000000000000003,
+      "count": 36
+    },
+    {
+      "method": "lora",
+      "min": 0.36,
+      "max": 1.0,
+      "count": 65
+    }
+  ],
+  "limitations": [
+    "n=3 seeds; descriptive only",
+    "Composite depends on normalization and probe set",
+    "Sensitivity/Pareto analysis should accompany any composite ranking"
+  ]
+}
