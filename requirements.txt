@@ -1,0 +1,12 @@
+# Versions this pipeline was developed against (see pyproject.toml for minimums)
+torch>=2.5
+transformers>=4.44
+datasets>=2.19
+peft>=0.11
+accelerate
+rouge_score
+numpy
+pandas
+scipy
+matplotlib
+pytest

@@ -10,3 +10,6 @@ outputs/adapters/
 
 # Ignore macOS metadata everywhere
 **/.DS_Store
+.venv/
+runs/
+*.egg-info/

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fapeft"
+version = "0.1.0"
+description = "Forgetting-aware parameter-efficient fine-tuning: resumable training and evaluation pipeline"
+requires-python = ">=3.10"
+dependencies = [
+  "torch", "transformers>=4.44", "datasets>=2.19", "peft>=0.11", "accelerate",
+  "rouge_score", "numpy", "pandas", "scipy", "matplotlib",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

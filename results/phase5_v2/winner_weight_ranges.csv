@@ -1,0 +1,7 @@
+ref_scale,method,min,max,count
+0.5,adalora,0.71,1.0,30
+0.5,dora,0.0,0.7000000000000001,71
+1.0,adalora,0.81,1.0,20
+1.0,dora,0.0,0.8,81
+2.0,adalora,0.9,1.0,11
+2.0,dora,0.0,0.89,90
