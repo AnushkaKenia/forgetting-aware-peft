@@ -137,6 +137,38 @@ class MpsCacheCallback(TrainerCallback):
     on_step_end = on_substep_end
 
 
+class MpsRngCallback(TrainerCallback):
+    """Trainer checkpoints store the Python/NumPy/CPU/CUDA random state but not Apple MPS's, so a
+    resumed run would draw different dropout masks than an uninterrupted one. (Observed: the
+    seed-42 LoRA run, resumed once, ended 12% away in effective weight update from a clean replay.)"""
+    FILE = "mps_rng.pt"
+
+    def __init__(self, ckpt_dir: Path, enabled: bool):
+        self.ckpt_dir, self.enabled = Path(ckpt_dir), enabled and torch.backends.mps.is_available()
+
+    def on_save(self, args, state, control, **kwargs):
+        if self.enabled:
+            folder = self.ckpt_dir / f"checkpoint-{state.global_step}"
+            tmp = folder / (self.FILE + ".tmp")
+            torch.save(torch.mps.get_rng_state(), tmp)
+            os.replace(tmp, folder / self.FILE)
+
+    def on_train_begin(self, args, state, control, **kwargs):
+        if self.enabled and state.global_step > 0:
+            path = self.ckpt_dir / f"checkpoint-{state.global_step}" / self.FILE
+            if path.exists():
+                torch.mps.set_rng_state(torch.load(path))
+
+
+class StopAtStep(TrainerCallback):
+    def __init__(self, step: int):
+        self.step = step
+
+    def on_step_end(self, args, state, control, **kwargs):
+        if state.global_step >= self.step:
+            control.should_training_stop = True
+
+
 class CrashAfterCheckpoint(TrainerCallback):
     def __init__(self, step: int):
         self.step = step
@@ -187,7 +219,8 @@ def train_run(peft_model, method: str, train_ds, collator, s: Settings, run_dir:
         report_to="none", seed=seed, data_seed=seed, remove_unused_columns=False,
         dataloader_num_workers=0, use_cpu=use_cpu,
     )
-    callbacks = [SnapshotCallback(peft_model, snap_dir, s.snapshot_steps), ProgressCallback(run_dir), MpsCacheCallback()]
+    callbacks = [SnapshotCallback(peft_model, snap_dir, s.snapshot_steps), ProgressCallback(run_dir), MpsCacheCallback(),
+                 MpsRngCallback(ckpt_dir, enabled=not use_cpu)]
     if method == "adalora":
         callbacks += [AdaLoraUpdateCallback(peft_model), AdaLoraStateCallback(peft_model, ckpt_dir)]
     callbacks += list(extra_callbacks)
@@ -209,3 +242,29 @@ def train_run(peft_model, method: str, train_ds, collator, s: Settings, run_dir:
         record["adalora_rank_pattern"] = cfg.rank_pattern
     write_json(done_path, record)
     return record
+
+
+def train_prefix(peft_model, method: str, train_ds, collator, s: Settings, seed: int, work_dir: Path,
+                 steps, use_cpu: bool = False):
+    """Replays the first max(steps) optimizer steps of a run, snapshotting at `steps`.
+
+    Used to back-fill early curve points for runs that were trained before those snapshots
+    existed. The learning-rate schedule still spans the full run (the Trainer is configured
+    for the full number of epochs and merely stopped early), so the trajectory matches the
+    original run up to floating-point nondeterminism. Nothing is checkpointed: a prefix is
+    minutes long, so an interrupted replay is simply repeated."""
+    work_dir = Path(work_dir)
+    args = TrainingArguments(
+        output_dir=str(work_dir / "ckpt"), num_train_epochs=s.epochs,
+        per_device_train_batch_size=s.batch, gradient_accumulation_steps=s.grad_accum,
+        learning_rate=s.lr, logging_steps=10, save_strategy="no",
+        fp16=torch.cuda.is_available() and not use_cpu, report_to="none", seed=seed, data_seed=seed,
+        remove_unused_columns=False, dataloader_num_workers=0, use_cpu=use_cpu)
+    callbacks = [SnapshotCallback(peft_model, work_dir / "snapshots", steps), MpsCacheCallback(),
+                 StopAtStep(max(steps))]
+    if method == "adalora":
+        callbacks.append(AdaLoraUpdateCallback(peft_model))
+    trainer = FullRankCheckpointTrainer(model=peft_model, args=args, train_dataset=train_ds,
+                                        data_collator=collator, callbacks=callbacks)
+    trainer.train()
+    assert trainer.state.global_step == max(steps)

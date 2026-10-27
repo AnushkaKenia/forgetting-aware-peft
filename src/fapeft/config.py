@@ -36,6 +36,7 @@ class Settings:
     # save points
     save_every: int = 25       # full Trainer checkpoint (resume point)
     snapshot_every: int = 50   # adapter kept forever, evaluated for the learning curve
+    early_steps: List[int] = field(default_factory=lambda: [5, 10, 15, 25, 35])  # extra early curve points
     keep_checkpoints: int = 2
     # evaluation
     seed_for_eval_sampling: int = 42
@@ -56,10 +57,10 @@ class Settings:
 
     @property
     def snapshot_steps(self) -> List[int]:
-        return list(range(self.snapshot_every, self.total_steps + 1, self.snapshot_every))
+        regular = range(self.snapshot_every, self.total_steps + 1, self.snapshot_every)
+        return sorted({*regular, *(t for t in self.early_steps if t < self.total_steps)})
 
     def validate(self) -> None:
-        assert self.snapshot_every % self.save_every == 0, "snapshots must coincide with resume checkpoints"
         assert self.curve_samsum_n <= self.samsum_eval_n
         assert self.adalora_tinit < self.total_steps - self.adalora_tfinal, "AdaLoRA budget schedule invalid"
 

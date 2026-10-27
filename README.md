@@ -34,12 +34,18 @@ curve across machines: evaluate every point of a curve on the same device.
 ## Save points (kill it anywhere, re-run the same command)
 
 * **Trainer checkpoint every 25 steps** (`runs/<tag>/seedS_method/ckpt`): weights, optimizer, RNG state.
-* **Adapter snapshot every 50 steps** (`.../snapshots/step_NNNN`), kept for the learning curve.
+* **Adapter snapshot every 50 steps, plus early steps 5, 10, 15, 25, 35** (`.../snapshots/step_NNNN`), kept for the learning curve.
 * **One JSON per (step, probe)** (`.../evals`), written atomically; existing files are skipped.
 * **`done.json`** marks a finished run; finished runs are skipped.
 * AdaLoRA's pruning state is not in Trainer checkpoints, so `AdaLoraStateCallback` saves it and
   `FullRankCheckpointTrainer` keeps checkpoints full-size. `tests/test_resume.py` kills AdaLoRA before and
   after its final prune and checks the resumed run matches an uninterrupted one.
+
+* **Accelerator RNG:** Trainer does not checkpoint the MPS random state, so dropout masks diverge after a
+  resume on Apple GPUs. `MpsRngCallback` saves and restores it with each checkpoint. Found by replaying a
+  resumed run: the old resumed LoRA differed from its replay (max weight diff 0.0024 on weights up to 0.039),
+  while AdaLoRA and DoRA, which never resumed, matched exactly (diff 0.0). The CPU equivalence tests did
+  not catch this. Early snapshots can be back-filled for a finished run with `--stages early`.
 
 A crash loses at most 25 optimizer steps (roughly 3 minutes on an M4, extrapolated from smoke timings).
 
@@ -68,3 +74,18 @@ ranked AdaLoRA as worst on retention although it changes nothing measurable. Wit
 * AdaLoRA is not dominated: it forgets significantly less and learns significantly less. LoRA and DoRA are
   statistically tied. The seed intervals cover training noise on a fixed eval set; example-sampling noise
   (about +/-3 points at n = 500) is additional.
+
+## Seed-42 learning curves (`results/curves_seed42/`)
+
+All three methods ran uninterrupted (LoRA was rerun cleanly after its first run had been resumed).
+Resumed vs clean LoRA differ by about 0.004 ROUGE-L and 0.006 PPL at step 250, which is a rough
+measure of dropout-noise size for a single seed. Final (step 250) values:
+
+| Method | ROUGE-L gain | PPL increase | KL to base |
+|---|---|---|---|
+| LoRA | +0.098 | +1.01 | 0.052 |
+| DoRA | +0.096 | +1.06 | 0.054 |
+| AdaLoRA | +0.051 | +0.01 | 0.001 |
+
+LoRA reaches about 90% of its final ROUGE-L gain by step 50 (+0.089 of +0.098) but only about 37% of its
+final PPL increase (+0.37 of +1.01), so forgetting keeps growing after the task gain has levelled off.

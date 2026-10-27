@@ -8,6 +8,8 @@ Layout under <runs_dir>/<tag>/:
   seed{S}_{method}/done.json   training complete marker
 """
 import gc
+import os
+import shutil
 import warnings
 from dataclasses import fields
 from pathlib import Path
@@ -20,8 +22,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from . import evals
 from .config import Settings, build_peft, pick_device
 from .data import INDEX_DIR, build_eval_sets, load_sources, make_collator, tokenize_train, train_subset, wiki_token_ids
-from .store import cached_json
-from .train import train_run
+from safetensors.torch import load_file
+
+from .store import cached_json, read_json, write_json
+from .train import train_prefix, train_run
 
 FULL_PROBES = ("boolq", "piqa", "arc", "mmlu")
 _EVAL_SIZE_FIELDS = ("samsum_eval_n", "boolq_n", "piqa_n", "arc_n", "mmlu_n", "seed_for_eval_sampling")
@@ -107,6 +111,49 @@ def evaluate_base(ctx: Context):
     run_jobs(ctx, d, {**_curve_jobs(ctx, 0), **_full_jobs(ctx, 0)}, ctx.load_base)
 
 
+def adapter_max_diff(a: Path, b: Path):
+    ta, tb = load_file(str(a / "adapter_model.safetensors")), load_file(str(b / "adapter_model.safetensors"))
+    assert ta.keys() == tb.keys()
+    worst = max((ta[k] - tb[k]).abs().max().item() for k in ta)
+    scale = max(t.abs().max().item() for t in ta.values())
+    return worst, scale
+
+
+def backfill_early(ctx: Context, seed: int, method: str):
+    """Adds the early snapshots to a finished run by replaying its first steps (see train_prefix).
+    The replay also runs to the first regular snapshot, which already exists, and the two
+    adapters are compared as a reproducibility check (recorded in early/verify.json)."""
+    s = ctx.s
+    run_dir = ctx.root / f"seed{seed}_{method}"
+    main = run_dir / "snapshots"
+    need = [t for t in s.early_steps if not (main / f"step_{t:04d}").exists()]
+    if not need:
+        return
+    if read_json(run_dir / "done.json") is None:
+        print(f"  {run_dir.name}: not finished, cannot back-fill early snapshots")
+        return
+    work, check = run_dir / "early", s.snapshot_every
+    steps = sorted({*s.early_steps, check})
+    if not (work / "snapshots" / f"step_{check:04d}").exists():
+        print(f"  replaying first {check} steps of {run_dir.name}")
+        shutil.rmtree(work, ignore_errors=True)
+        transformers.set_seed(seed)
+        model = build_peft(AutoModelForCausalLM.from_pretrained(s.base_model, dtype=torch.float32), method, s)
+        train_ds = tokenize_train(train_subset(ctx.src, s, seed, ctx.index_dir), ctx.tok, s.max_len)
+        train_prefix(model, method, train_ds, make_collator(ctx.tok), s, seed, work, steps,
+                     use_cpu=(ctx.device.type == "cpu"))
+        del model
+        release(ctx.device)
+    worst, scale = adapter_max_diff(work / "snapshots" / f"step_{check:04d}", main / f"step_{check:04d}")
+    write_json(work / "verify.json", {"step": check, "max_abs_weight_diff": worst, "max_abs_weight": scale})
+    print(f"  replay vs original at step {check}: max |diff| = {worst:.3g} (largest weight {scale:.3g})")
+    for t in need:
+        tmp = main / f".tmp_step_{t:04d}"
+        shutil.rmtree(tmp, ignore_errors=True)
+        shutil.copytree(work / "snapshots" / f"step_{t:04d}", tmp)
+        os.replace(tmp, main / f"step_{t:04d}")
+
+
 def run_one(ctx: Context, seed: int, method: str, stages):
     s, name = ctx.s, f"seed{seed}_{method}"
     run_dir = ctx.root / name
@@ -118,12 +165,12 @@ def run_one(ctx: Context, seed: int, method: str, stages):
         train_run(model, method, train_ds, make_collator(ctx.tok), s, run_dir, seed, use_cpu=(ctx.device.type == "cpu"))
         del model
         release(ctx.device)
+    if "early" in stages:
+        backfill_early(ctx, seed, method)
     if "eval" in stages:
-        for step in s.snapshot_steps:
+        steps = sorted(int(p.name.split("_")[1]) for p in (run_dir / "snapshots").glob("step_*"))
+        for step in steps:
             snap = run_dir / "snapshots" / f"step_{step:04d}"
-            if not snap.exists():
-                print(f"  snapshot step {step} missing (training not finished?)")
-                continue
             jobs = _curve_jobs(ctx, step)
             if step == s.total_steps:
                 jobs.update(_full_jobs(ctx, step))

@@ -21,7 +21,7 @@ def tiny_settings(**kw):
     base = dict(train_n=32, epochs=2, batch=2, grad_accum=2, lr=1e-3, lora_dropout=0.1,
                 target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
                 adalora_init_r=6, adalora_target_r=4, adalora_tinit=4, adalora_tfinal=8, adalora_deltaT=2,
-                save_every=4, snapshot_every=8, curve_samsum_n=1, samsum_eval_n=1)
+                save_every=4, snapshot_every=8, early_steps=[], curve_samsum_n=1, samsum_eval_n=1)
     base.update(kw)
     return Settings(**base)  # 32/(2*2)*2 = 16 optimizer steps
 
@@ -97,3 +97,25 @@ def test_completed_run_is_skipped(tmp_path):
     first = go()
     model2, go2 = run("lora", tmp_path / "r", s)
     assert go2() == first
+
+
+@pytest.mark.parametrize("method", ["lora", "dora", "adalora"])
+def test_prefix_replay_matches_full_run_snapshots(tmp_path, method):
+    """Back-filled early snapshots must equal the ones a full run produces natively."""
+    from safetensors.torch import load_file
+    from fapeft.train import train_prefix
+
+    s = tiny_settings(early_steps=[2, 6])
+    full_model, go = run(method, tmp_path / "full", s)
+    go()
+    assert sorted(p.name for p in (tmp_path / "full/snapshots").iterdir()) == \
+        ["step_0002", "step_0006", "step_0008", "step_0016"]
+
+    model = build(method, s)
+    train_prefix(model, method, make_data(), default_data_collator, s, seed=1, work_dir=tmp_path / "replay",
+                 steps=[2, 6, 8], use_cpu=True)
+    for step in ("0002", "0006", "0008"):
+        a = load_file(str(tmp_path / f"full/snapshots/step_{step}/adapter_model.safetensors"))
+        b = load_file(str(tmp_path / f"replay/snapshots/step_{step}/adapter_model.safetensors"))
+        assert a.keys() == b.keys()
+        assert max((a[k] - b[k]).abs().max().item() for k in a) < 1e-5, f"{method} step {step}"
