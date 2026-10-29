@@ -89,3 +89,28 @@ measure of dropout-noise size for a single seed. Final (step 250) values:
 
 LoRA reaches about 90% of its final ROUGE-L gain by step 50 (+0.089 of +0.098) but only about 37% of its
 final PPL increase (+0.37 of +1.01), so forgetting keeps growing after the task gain has levelled off.
+
+## 3-seed results under one protocol (`results/curves_3seed/`, `results/phase5_v3/REPORT.md`)
+
+Seeds 42, 123, 2026 x LoRA, AdaLoRA, DoRA, all uninterrupted except that nothing was resumed after the
+MPS RNG fix. Per-seed final table: `results/per_seed_v3.csv` (built by `scripts/build_per_seed_table.py`).
+Means at step 250 (95% t-intervals, n = 3):
+
+| Method | ROUGE-L gain | WikiText PPL increase | KL to base |
+|---|---|---|---|
+| LoRA | +0.102 [0.085, 0.119] | +0.95 [0.78, 1.11] | 0.052 |
+| DoRA | +0.100 [0.079, 0.122] | +1.00 [0.84, 1.15] | 0.055 |
+| AdaLoRA | +0.050 [0.047, 0.054] | +0.00 [-0.02, 0.02] | 0.001 |
+
+* WikiText perplexity remains the only probe with a clear effect. LoRA and DoRA both degrade it; AdaLoRA does not.
+* BoolQ and PIQA accuracy go up slightly for LoRA and DoRA (PIQA CIs exclude 0). Treat this as a small
+  instruction-format effect, not "no forgetting": the CIs cover training noise only, and eval-sampling noise
+  at n = 500 is about +/-3 points. ARC and MMLU show nothing.
+* LoRA vs AdaLoRA and DoRA vs AdaLoRA differ on perplexity (Holm-adjusted p about 0.02) but not on
+  anything else after correction. LoRA vs DoRA: DoRA's perplexity is 0.05 higher (unadjusted p = .007,
+  Holm p = .10), so the Pareto output "LoRA dominates DoRA" is weak evidence. Paired tests on 3 seeds have little power.
+* The curves show a timing effect: LoRA and DoRA reach 60-70% of their final ROUGE-L gain by step 5-25 with
+  PPL increase under 0.25, while perplexity damage grows roughly linearly afterwards (KL likewise). AdaLoRA
+  learns nothing until step ~50 (rank-budget schedule) and then gains with almost no drift.
+  ROUGE-L at curve points uses 100 examples (seed sd up to 0.02 at early steps), so treat early-step
+  ROUGE-L as indicative.

@@ -13,6 +13,7 @@ Statistics note: n = 3 seeds, so every interval uses Student's t with 2 d.f.
 Seeds are paired across methods (same seed => same training sample and eval
 subset), so method-vs-method comparisons use paired t-tests.
 """
+import argparse
 from pathlib import Path
 import itertools
 
@@ -25,8 +26,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
-INPUT = ROOT / "results/final_analysis/three_seed_per_seed_results.csv"
-OUT = ROOT / "results/phase5_v2"
+_ap = argparse.ArgumentParser()
+_ap.add_argument("--input", type=Path, default=ROOT / "results/final_analysis/three_seed_per_seed_results.csv")
+_ap.add_argument("--out", type=Path, default=ROOT / "results/phase5_v2")
+_ap.add_argument("--wiki-base-ppl", type=float, default=17.2027)
+_args = _ap.parse_args()
+INPUT, OUT = _args.input, _args.out
 PLOTS = OUT / "plots"
 OUT.mkdir(parents=True, exist_ok=True)
 PLOTS.mkdir(parents=True, exist_ok=True)
@@ -36,7 +41,7 @@ ACC_PROBES = ["boolq_forgetting", "piqa_forgetting", "arc_forgetting", "mmlu_for
 PROBES = ACC_PROBES + ["wikitext_ppl_increase"]
 ADAPT = "samsum_rl_gain"
 N_PROBE = 500            # examples per accuracy probe
-WIKI_BASE_PPL = 17.2027  # identical base-model perplexity in every seed
+WIKI_BASE_PPL = _args.wiki_base_ppl  # identical base-model perplexity in every seed
 ALPHA = 0.05
 TCRIT = stats.t.ppf(1 - ALPHA / 2, df=2)
 
