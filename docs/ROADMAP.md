@@ -5,6 +5,53 @@ Target: a rigorous empirical paper (TMLR-style, arXiv first). Working claim to t
 by hyperparameters, and common forgetting metrics are too noisy to show it."**
 Everything below is ordered by cost: free first (existing data), then laptop, then free Colab.
 
+## Status (updated 2026-10-30)
+
+| Item | Status |
+|---|---|
+| 3 seeds x 3 methods, unified protocol (`runs/v3`) | **Done**, results in `results/curves_3seed`, `results/phase5_v3` |
+| A1 matched adaptation, A2 early stopping, A3 delta-W, A4/A5 paired + noise floor | **Done**, `results/matched_adaptation`, `delta_w`, `paired` (findings in README) |
+| B1 learning-rate sweep, seed 42 | lr 1e-4, 5e-4 **done** (with 2e-4 baseline), `results/lr_frontier`. **lr 5e-5 not run.** |
+| B2 rank/alpha sweep, B3 mitigation baselines, B4 seeds 4-5, B5 | Not started |
+| C0-C5 (Colab, second model/task, generation probes) | Not started |
+| D method + writing | Not started |
+
+**Findings so far** (details in README): forgetting is mostly a function of how much the model adapts, not of the
+method or learning rate; AdaLoRA's retention advantage disappears at matched gain; early stopping at steps 5-25 is a
+strong baseline; BoolQ "improvement" is a Yes-bias shift; ARC/MMLU gold log-probability drops while accuracy does not.
+
+## Handing tasks to a teammate
+
+Good tasks to hand off, independent of each other (each writes only to its own `runs/<tag>` folder and its own
+`results/<name>` folder, so they do not conflict):
+
+| Task | Where to run | Rough time | Command / note |
+|---|---|---|---|
+| B1: lr 5e-5, seed 42 | laptop or Colab | ~4 h (laptop) | see "Running a sweep" below |
+| B2: LoRA rank/alpha sweep (r = 4, 16, 32, alpha = 2r) | laptop or Colab | ~1 h per run | `--set lora_r=16 lora_alpha=32`, tags `v5_r16` etc., LoRA only |
+| B4: seeds 4 and 5 for the 2e-4 setup | laptop or Colab | ~3.5 h per seed (laptop) | `--seeds 4 5`, new tag, copy base evals |
+| C0: Colab notebook + one benchmark run | Colab | a day | clone repo, `pip install -e .`, `--runs-dir /content/drive/MyDrive/fapeft_runs` |
+| New analysis code (B3 KL/replay options in `train.py`, task abstraction) | any | days | needs the tests in `tests/` to keep passing |
+
+### Running a sweep
+```bash
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev]" && .venv/bin/python -m pytest -q
+mkdir -p runs/v4_lr5e-5 && cp -R results/base_evals runs/v4_lr5e-5/base          # reuse the untrained-model evals (laptop/MPS numbers)
+caffeinate -dimsu .venv/bin/python scripts/run_curves.py --tag v4_lr5e-5 --seeds 42 --methods lora adalora dora --set lr=5e-5
+```
+Re-running the same command resumes after a crash or disconnect (at most 25 steps are lost).
+
+### Rules so results stay comparable
+- `runs/` is git-ignored (large). Share finished runs through Drive or a zip; commit only the small `results/` files.
+- **Do not mix devices within one comparison.** A run's `base/` evaluations must come from the same device as its
+  snapshots. Colab's untrained-model numbers must match the laptop's (WikiText PPL 17.20, BoolQ .620, PIQA .676,
+  ARC .716, MMLU .456) before cross-device results are used; if not, evaluate every compared run on one device.
+- Keep the evaluation protocol unchanged (200 SAMSum examples, 500 per accuracy probe, fixed indices in `data/indices`).
+- Use a new tag for every run set and one branch per task; open a PR into the working branch.
+- The untrained-model evaluations are committed in `results/base_evals` (80 KB, from the laptop). Copy them to
+  `runs/<tag>/base` to skip the 7-minute base evaluation. On a different device (e.g. Colab) skip the copy: the pipeline
+  evaluates the base model automatically when `base/` is missing, so the comparison stays on one device.
+
 Time estimates use measured laptop (M4 Air, MPS) numbers: train LoRA ~36 min, AdaLoRA ~40, DoRA ~70-75,
 plus ~20-30 min evaluation per run (full pipeline, 11 curve points). Colab T4 speeds are **not measured**;
 benchmark one run before planning around them.
