@@ -73,7 +73,7 @@ ranked AdaLoRA as worst on retention although it changes nothing measurable. Wit
   eval set but small (about 1.7 points).
 * AdaLoRA is not dominated: it forgets significantly less and learns significantly less. LoRA and DoRA are
   statistically tied. The seed intervals cover training noise on a fixed eval set; example-sampling noise
-  (about +/-3 points at n = 500) is additional.
+  (about +/-3 points at n = 500 for an unpaired comparison; see the paired analysis below, where it is about 1 point or less) is additional.
 
 ## Seed-42 learning curves (`results/curves_seed42/`)
 
@@ -104,8 +104,8 @@ Means at step 250 (95% t-intervals, n = 3):
 
 * WikiText perplexity remains the only probe with a clear effect. LoRA and DoRA both degrade it; AdaLoRA does not.
 * BoolQ and PIQA accuracy go up slightly for LoRA and DoRA (PIQA CIs exclude 0). Treat this as a small
-  instruction-format effect, not "no forgetting": the CIs cover training noise only, and eval-sampling noise
-  at n = 500 is about +/-3 points. ARC and MMLU show nothing.
+  instruction-format effect, not "no forgetting": the CIs cover training noise only. ARC and MMLU show nothing
+  in accuracy (but see the paired analysis: gold-answer log-probability does drop).
 * LoRA vs AdaLoRA and DoRA vs AdaLoRA differ on perplexity (Holm-adjusted p about 0.02) but not on
   anything else after correction. LoRA vs DoRA: DoRA's perplexity is 0.05 higher (unadjusted p = .007,
   Holm p = .10), so the Pareto output "LoRA dominates DoRA" is weak evidence. Paired tests on 3 seeds have little power.
@@ -114,3 +114,26 @@ Means at step 250 (95% t-intervals, n = 3):
   learns nothing until step ~50 (rank-budget schedule) and then gains with almost no drift.
   ROUGE-L at curve points uses 100 examples (seed sd up to 0.02 at early steps), so treat early-step
   ROUGE-L as indicative.
+
+## Phase A analyses (`results/paired`, `results/delta_w`, `results/matched_adaptation`, `results/lr_frontier`)
+
+* **Paired per-example analysis.** Pairing on the same examples gives a standard error of 0.3-1.2 points,
+  about 3-4x smaller than the unpaired binomial figure, so the "+/-3 points" noise floor is too pessimistic
+  for before/after comparisons (it still applies to comparing different eval sets).
+* **BoolQ is a Yes-bias shift, not better comprehension.** The base model answers Yes 80% of the time (62% of
+  gold answers are Yes); after LoRA/DoRA 82-89%. Accuracy on Yes-gold rises, on No-gold falls; balanced
+  accuracy is flat (about 0.55 before and after).
+* **Accuracy hides drift that gold log-probability sees.** On ARC and MMLU, LoRA and DoRA lower the gold
+  answer's log-probability by about 0.03 nats (z = 3.2-3.9 over examples) with no accuracy change; AdaLoRA none.
+* **Update size predicts forgetting.** Relative update norm ||dW||/||W|| correlates 0.95 (perplexity) and 0.97 (KL)
+  across all runs. LoRA at step 5 and AdaLoRA at step 250 have the same norm (0.0026) and the same perplexity
+  change (+0.001). A simplified intruder-dimension count (top 10 singular vectors, cosine < 0.5) is 0 everywhere;
+  this is not the exact measure of Shuttleworth et al. and the updates are only about 1% of the weight norm.
+* **Matched adaptation (200 SAMSum examples).** LoRA at step 5 gains +0.055 with +0.001 perplexity; AdaLoRA at
+  step 250 gains +0.050 with +0.001. At equal gain, no retention difference: AdaLoRA forgets less because it
+  learns less. LoRA/DoRA early stopping at step 15 keeps 73% of the final gain with 12% of the perplexity increase.
+* **Learning rate (seed 42 only).** At 5e-4 LoRA/DoRA reach gain +0.103/+0.108 for perplexity +2.1/+2.2 (vs
+  +0.096/+0.093 for +1.0 at 2e-4), so a higher learning rate mostly adds forgetting. Along training, gain vs
+  perplexity increase follows nearly the same curve for every learning rate and for both LoRA and DoRA; AdaLoRA
+  at 5e-4 (+0.083, +0.20) is also not better than early-stopped LoRA at that gain. Intermediate-step gains use
+  100 examples, so those curves are jagged. One seed; treat as indicative until more seeds are run.
